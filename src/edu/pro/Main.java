@@ -22,6 +22,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         LocalDateTime start = LocalDateTime.now();
+       // Path path = Paths.get()
         String content = new String(Files.readAllBytes(Paths.get("src/edu/pro/txt/harry.txt")));
 
         content = content.replaceAll("[^A-Za-z ]"," ").toLowerCase(Locale.ROOT);
@@ -61,9 +62,10 @@ public class Main {
         for (int i = 0; i < 30; i++) {
             System.out.println(distincts[distincts.length - 1 - i]);
         }
+        LocalDateTime finish = LocalDateTime.now();
 
         System.out.println("------");
-
+        System.out.println(ChronoUnit.MILLIS.between(start, finish));
 
     }
 }
