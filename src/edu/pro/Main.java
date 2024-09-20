@@ -6,66 +6,49 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Main {
 
-    public static String cleanText(String url) throws IOException {
-        String content = new String(Files.readAllBytes(Paths.get(url)));
-        content = content.replaceAll("[^A-Za-z ]"," ").toLowerCase(Locale.ROOT);
-        return content;
-    }
-
     public static void main(String[] args) throws IOException {
+        LocalDateTime startTime = LocalDateTime.now();
 
-        LocalDateTime start = LocalDateTime.now();
-       // Path path = Paths.get()
-        String content = new String(Files.readAllBytes(Paths.get("src/edu/pro/txt/harry.txt")));
+        execute();
 
-        content = content.replaceAll("[^A-Za-z ]"," ").toLowerCase(Locale.ROOT);
-
-        String[] words = content.split(" +"); // 400 000
-
-        Arrays.sort(words);
-
-        String distinctString = " ";
-
-        for (int i = 0; i < words.length ; i++) {
-            if (!distinctString.contains(words[i])){
-                distinctString+= words[i] + " ";
-            }
-        }
-
-        String[] distincts = distinctString.split(" ");
-        int[] freq = new int[distincts.length];
-
-        for (int i = 0; i < distincts.length ; i++) {
-            int count = 0;
-            for (int j = 0; j < words.length ; j++) {
-                if (distincts[i].equals(words[j])) {
-                    count++;
-                }
-            }
-            freq[i] = count;
-        }
-
-        for (int i = 0; i < distincts.length ; i++) { // 5 000
-            distincts[i] += " " + freq[i];
-        }
-
-        Arrays.sort(distincts, Comparator.comparing(str
-                -> Integer.valueOf(str.replaceAll("[^0-9]", ""))));
-
-        for (int i = 0; i < 30; i++) {
-            System.out.println(distincts[distincts.length - 1 - i]);
-        }
-        LocalDateTime finish = LocalDateTime.now();
+        LocalDateTime finishTime = LocalDateTime.now();
 
         System.out.println("------");
-        System.out.println(ChronoUnit.MILLIS.between(start, finish));
+        System.out.printf("Execution time: %s ms%n", ChronoUnit.MILLIS.between(startTime, finishTime));
+    }
 
+    private static void execute() throws IOException {
+        String[] words = readAndPreprocessFile("src/edu/pro/txt/harry.txt");
+        Map<String, Long> wordFrequencies = countWordFrequencies(words);
+        printTopWords(wordFrequencies, 30);
+    }
+
+    private static String[] readAndPreprocessFile(String filePath) throws IOException {
+        String content = new String(Files.readAllBytes(Paths.get(filePath)));
+        content = content.replaceAll("[^A-Za-z ]", " ").toLowerCase(Locale.ROOT);
+        return content.split("\\s+");
+    }
+
+    private static Map<String, Long> countWordFrequencies(String[] words) {
+        return Arrays.stream(words)
+                .filter(word -> !word.isEmpty())
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                ));
+    }
+
+    private static void printTopWords(Map<String, Long> wordFrequencies, int limit) {
+        wordFrequencies.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(limit)
+                .forEach(entry -> System.out.println(entry.getKey() + " " + entry.getValue()));
     }
 }
